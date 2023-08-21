@@ -10,7 +10,7 @@ public class NodeGenerator : MonoBehaviour
     Node[] nodeTypesGameObjects;
     List<Node> nodes = new List<Node>();
     [SerializeField]
-    int FightCount;    
+    int FightCount;
     [SerializeField]
     int ChestCount;
     [SerializeField]
@@ -22,7 +22,7 @@ public class NodeGenerator : MonoBehaviour
         GenerateNet();
     }
     void Update()
-    {   
+    {
     }
     void CheckNodesInstances()
     {
@@ -35,11 +35,11 @@ public class NodeGenerator : MonoBehaviour
     void SpawnNodes()
     {
         AddNode(NodeType.Start);
-        for(int i = 0; i < FightCount; i++)
+        for (int i = 0; i < FightCount; i++)
         {
             AddNode(NodeType.Fight);
         }
-        for(int i = 0; i < ChestCount; i++)
+        for (int i = 0; i < ChestCount; i++)
         {
             AddNode(NodeType.Chest);
         }
@@ -48,17 +48,17 @@ public class NodeGenerator : MonoBehaviour
     }
     void GenerateNet()
     {
-        for(int i = 0; i < nodes.Count; i++)
+        for (int i = 0; i < nodes.Count; i++)
         {
             var node = nodes[i];
             node.transform.position = new Vector3(i * 3, 0, 0);
-            if(i < nodes.Count - 1)
+            if (i < nodes.Count - 1)
             {
                 node.LinkedNodes.Add(nodes[i + 1]);
             }
 
-        }        
-        for(int i = 0; i < nodes.Count; i++)
+        }
+        for (int i = 0; i < nodes.Count; i++)
         {
             var node = nodes[i];
             if (node.LinkedNodes.Count != 0)
@@ -68,6 +68,7 @@ public class NodeGenerator : MonoBehaviour
                 t.startWidth = 0.15f;
                 t.endWidth = 0.15f;
                 t.material = lineMaterial;
+                t.sortingOrder = -1;
                 t.SetPosition(0, node.transform.position);
                 t.SetPosition(1, node.LinkedNodes[0].transform.position);
             }
