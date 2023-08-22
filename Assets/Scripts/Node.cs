@@ -9,7 +9,7 @@ public class Node : MonoBehaviour
 }
 public enum NodeType
 {
-    Start, 
+    Start,
     Fight,
     Chest,
     Boss,

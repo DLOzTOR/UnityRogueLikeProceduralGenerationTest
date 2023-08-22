@@ -80,6 +80,20 @@ public class NodeGenerator : MonoBehaviour
         t.gameObject.SetActive(true);
         nodes.Add(t);
     }
+    void CheckLinkWokr()
+    {
+        var l1 = new NodeLink(nodes[0], nodes[1]);
+        var l2 = new NodeLink(nodes[0], nodes[1]);
+        var l3 = new NodeLink(nodes[1], nodes[0]);
+        var l4 = new NodeLink(nodes[0], nodes[2]);
+        var l5 = new NodeLink(nodes[1], nodes[2]);
+        Debug.Log("l1 l2 " + l1.Equals(l2) + " true");
+        Debug.Log("l1 l3 " + l1.Equals(l3) + " true");
+        Debug.Log("l1 l4 " + l1.Equals(l4) + " true");
+        Debug.Log("l1 l5 " + l1.Equals(l5) + " false");
+        Debug.Log("l3 l4 " + l1.Equals(l4) + " false");
+        Debug.Log("l3 l5 " + l1.Equals(l5) + " false");
+    }
     Node GetNodeInstance(NodeType type)
     {
         return nodeTypesGameObjects.First(t => t.type == type);
