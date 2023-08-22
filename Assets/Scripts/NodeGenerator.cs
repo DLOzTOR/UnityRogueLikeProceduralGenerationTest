@@ -15,6 +15,8 @@ public class NodeGenerator : MonoBehaviour
     int FightCount;
     [SerializeField]
     int ChestCount;
+    [SerializeField]
+    NodeLink nodeLinkInstance;
     void Start()
     {
         CheckNodesInstances();
@@ -45,24 +47,20 @@ public class NodeGenerator : MonoBehaviour
     }
     void GenerateNet()
     {
-        for (int i = 0; i < nodes.Count; i++)
+        var startNode = nodes.First(a => a.type == NodeType.Start);
+        var fightNodes = nodes.Where(a => a.type == NodeType.Fight).ToArray();
+        var chestNodes = nodes.Where(a => a.type == NodeType.Chest).ToArray();
+        var bossNode = nodes.First(a => a.type == NodeType.Boss);
+        var endNode = nodes.First(b => b.type == NodeType.End);
+        float shift = fightNodes.Length/2;
+        for(int i = 0; i < fightNodes.Length; i++)
         {
-            var node = nodes[i];
-            node.transform.position = new Vector3(i * 3, 0, 0);
-        }
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            var node = nodes[i];
-            if (i < nodes.Count - 1 )
-            {
-                var link = new NodeLink(node, nodes[i + 1]);
-                Debug.Log("2");
-                if (!IsLinkExist(link)) {
-                    Debug.Log("@");
-                    nodeLinks.Add(link);
-                    link.CreateLine();
-                }
-            }
+            var node = fightNodes[i];
+            node.transform.position = new Vector3(2, (i - shift) * 2);
+            var nodeLink = Instantiate(nodeLinkInstance, startNode.transform, startNode);
+            nodeLink.FirstNode = startNode;
+            nodeLink.SecondNode = node;
+            AddLink(nodeLink);
         }
     }
     bool IsLinkExist(NodeLink link)
@@ -74,6 +72,14 @@ public class NodeGenerator : MonoBehaviour
         var t = Instantiate(GetNodeInstance(type));
         t.gameObject.SetActive(true);
         nodes.Add(t);
+    }
+    void AddLink(NodeLink link)
+    {
+        if (!IsLinkExist(link))
+        {
+            nodeLinks.Add(link);
+            link.CreateLine();
+        }
     }
     void CheckLinkWork()
     {
