@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
@@ -9,20 +8,16 @@ public class NodeGenerator : MonoBehaviour
     [SerializeField]
     Node[] nodeTypesGameObjects;
     List<Node> nodes = new List<Node>();
+    List<NodeLink> nodeLinks = new List<NodeLink>();
     [SerializeField]
     int FightCount;
     [SerializeField]
     int ChestCount;
-    [SerializeField]
-    Material lineMaterial;
     void Start()
     {
         CheckNodesInstances();
         SpawnNodes();
         GenerateNet();
-    }
-    void Update()
-    {
     }
     void CheckNodesInstances()
     {
@@ -63,14 +58,7 @@ public class NodeGenerator : MonoBehaviour
             var node = nodes[i];
             if (node.LinkedNodes.Count != 0)
             {
-                var t = node.AddComponent<LineRenderer>();
-                t.positionCount = 2;
-                t.startWidth = 0.15f;
-                t.endWidth = 0.15f;
-                t.material = lineMaterial;
-                t.sortingOrder = -1;
-                t.SetPosition(0, node.transform.position);
-                t.SetPosition(1, node.LinkedNodes[0].transform.position);
+                nodeLinks.Add(new NodeLink(node, nodes[i + 1]));
             }
         }
     }
@@ -80,7 +68,7 @@ public class NodeGenerator : MonoBehaviour
         t.gameObject.SetActive(true);
         nodes.Add(t);
     }
-    void CheckLinkWokr()
+    void CheckLinkWork()
     {
         var l1 = new NodeLink(nodes[0], nodes[1]);
         var l2 = new NodeLink(nodes[0], nodes[1]);
