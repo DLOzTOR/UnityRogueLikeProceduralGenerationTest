@@ -15,19 +15,24 @@ public class NodeLink {
     {
         this.firstNode = firstNode;
         this.secondNode = secondNode;
-        lineRenderer = firstNode.AddComponent<LineRenderer>();
-        lineRenderer.positionCount = 2;
-        lineRenderer.startWidth = 0.15f;
-        lineRenderer.endWidth = 0.15f;
-        lineRenderer.material = lineMaterial;
-        lineRenderer.sortingOrder = -1;
-        lineRenderer.SetPosition(0, firstNode.transform.position);
-        lineRenderer.SetPosition(1, secondNode.transform.position);
     }
 
     public Node FirstNode { get => firstNode; }
     public Node SecondNode { get => secondNode; }
-
+    public void CreateLine()
+    {
+        if (lineRenderer == null)
+        {
+            lineRenderer = firstNode.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 2;
+            lineRenderer.startWidth = lineHeight;
+            lineRenderer.endWidth = lineHeight;
+            lineRenderer.material = lineMaterial;
+            lineRenderer.sortingOrder = -1;
+            lineRenderer.SetPosition(0, firstNode.transform.position);
+            lineRenderer.SetPosition(1, secondNode.transform.position);
+        }
+    }
     public override bool Equals(object obj)
     {
         if (obj is NodeLink)
