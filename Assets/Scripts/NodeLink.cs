@@ -5,25 +5,29 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-public class NodeLink : MonoBehaviour{
+public class NodeLink : MonoBehaviour {
     public static float lineHeight = 0.15f;
-    public static Material lineMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Line.mat");
+    [SerializeField]
+    public Material lineMaterial;
     [SerializeField]
     Node firstNode;
     [SerializeField]
     Node secondNode;
     LineRenderer lineRenderer;
-    public NodeLink(Node firstNode, Node secondNode)
+    public Node FirstNode { get => firstNode; set { if (firstNode == null) firstNode = value; } }
+    public Node SecondNode { get => secondNode; set { if (secondNode == null) secondNode = value; } }
+
+    public Color Color { set => lineRenderer.SetColors(value, value); }
+
+    public static NodeLink Create(Node firstNode, Node secondNode, NodeLink instance)
     {
-        FirstNode = firstNode;
-        SecondNode = secondNode;
-        Instantiate(this);
-        transform.parent = firstNode.transform;
+        var nodeLink = Instantiate(instance, firstNode.transform, firstNode);
+        nodeLink.FirstNode = firstNode;
+        nodeLink.SecondNode = secondNode;
+        firstNode.AddLinkedNode(secondNode);
+        secondNode.AddLinkedNode(firstNode);
+        return nodeLink;
     }
-
-    public Node FirstNode { get => firstNode; set => firstNode = value; }
-    public Node SecondNode { get => secondNode; set => secondNode = value; }
-
     public void CreateLine()
     {
         if (lineRenderer == null)
@@ -51,6 +55,17 @@ public class NodeLink : MonoBehaviour{
             {
                 return false;
             }
+        }
+        else
+        {
+            return false;
+        }
+    }    
+    public bool Equals(Node n1, Node n2)
+    {
+        if (FirstNode == n1 && SecondNode == n2 || FirstNode == n2 && SecondNode == n1)
+        {
+            return true;
         }
         else
         {

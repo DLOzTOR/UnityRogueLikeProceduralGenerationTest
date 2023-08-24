@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class NodeGenerator : MonoBehaviour
 {
+    public static Action<Node> OnNodeClick;
+    public static Action<Node> OnNodeOver;
     [SerializeField]
     Node[] nodeTypesGameObjects;
     List<Node> nodes = new List<Node>();
@@ -17,19 +19,74 @@ public class NodeGenerator : MonoBehaviour
     int ChestCount;
     [SerializeField]
     NodeLink nodeLinkInstance;
+    [SerializeField]
+    float nodeDisatance = 2;
+    [SerializeField]
+    Color lineColor = Color.white;    
+    [SerializeField]
+    Color activeLineColor = Color.magenta;
+    List<NodeLink> activeLinkList = new List<NodeLink>();
+    Node selectedNode;
     void Start()
     {
         CheckNodesInstances();
         SpawnNodes();
         GenerateNet();
+        selectedNode = nodes.First(a => a.type == NodeType.Start);
     }
-    void CheckNodesInstances()
+    private void OnEnable()
     {
-        GetNodeInstance(NodeType.Start).ToString();
-        GetNodeInstance(NodeType.Fight).ToString();
-        GetNodeInstance(NodeType.Chest).ToString();
-        GetNodeInstance(NodeType.Boss).ToString();
-        GetNodeInstance(NodeType.End).ToString();
+        OnNodeClick += NodeClick;
+        OnNodeOver += NodeOver;
+    }
+    private void OnDisable()
+    {
+        OnNodeClick -= NodeClick;
+        OnNodeOver -= NodeOver;
+    }
+    void NodeClick(Node node)
+    {
+        selectedNode = node;
+    }
+    void NodeOver(Node node)
+    {
+        if (Pathfind.GetPath(selectedNode, node, out var t))
+        {
+            SetActivePath(t);
+        }
+        else
+        {
+            ClearActivePath();
+        }
+    }
+    void SetActivePath(List<Node> path)
+    {
+        foreach (var link in activeLinkList) 
+        {
+            link.Color = lineColor;
+        }
+        var tLinkList = new List<NodeLink>();
+        for(int i = 0; i < path.Count - 1; i++)
+        {
+            tLinkList.Add(FindLink(path[i], path[i + 1]));
+        }
+        activeLinkList = tLinkList;
+        foreach (var link in activeLinkList)
+        {
+            link.Color = activeLineColor;
+        }
+    }
+    void ClearActivePath()
+    {
+        foreach (var link in activeLinkList)
+        {
+            link.Color = lineColor;
+        }
+        activeLinkList.Clear();
+    }
+    NodeLink FindLink(Node n1, Node n2)
+    {
+        return nodeLinks.FirstOrDefault(a => a.Equals(n1, n2));
     }
     void SpawnNodes()
     {
@@ -52,16 +109,40 @@ public class NodeGenerator : MonoBehaviour
         var chestNodes = nodes.Where(a => a.type == NodeType.Chest).ToArray();
         var bossNode = nodes.First(a => a.type == NodeType.Boss);
         var endNode = nodes.First(b => b.type == NodeType.End);
-        float shift = fightNodes.Length/2;
-        for(int i = 0; i < fightNodes.Length; i++)
+        float shift = (chestNodes.Length) / 2;
+        if (chestNodes.Length % 2 == 0)
+        {
+            shift -= 0.5f;
+        }
+        for (int i = 0; i < chestNodes.Length; i++)
+        {
+            var node = chestNodes[i];
+            node.transform.position = new Vector3(2 * nodeDisatance, (i - shift) * nodeDisatance);
+        }
+        shift = (fightNodes.Length) / 2;
+        if (fightNodes.Length % 2 == 0)
+        {
+            shift -= 0.5f;
+        }
+        for (int i = 0; i < fightNodes.Length; i++)
         {
             var node = fightNodes[i];
-            node.transform.position = new Vector3(2, (i - shift) * 2);
-            var nodeLink = Instantiate(nodeLinkInstance, startNode.transform, startNode);
-            nodeLink.FirstNode = startNode;
-            nodeLink.SecondNode = node;
-            AddLink(nodeLink);
+            node.transform.position = new Vector3(nodeDisatance, (i - shift) * nodeDisatance);
+            AddLink(NodeLink.Create(startNode, node, nodeLinkInstance));
+            for (int j = 0; j < chestNodes.Length; j++)
+            {
+                var chestNode = chestNodes[j];
+                AddLink(NodeLink.Create(node, chestNode, nodeLinkInstance));
+            }
         }
+        bossNode.transform.position = new Vector3(3 * nodeDisatance, 0);
+        for (int i = 0; i < chestNodes.Length; i++)
+        {
+            var node = chestNodes[i];
+            AddLink(NodeLink.Create(node, bossNode, nodeLinkInstance));
+        }
+        endNode.transform.position = new Vector3(4 * nodeDisatance, 0);
+        AddLink(NodeLink.Create(bossNode, endNode, nodeLinkInstance));
     }
     bool IsLinkExist(NodeLink link)
     {
@@ -72,6 +153,21 @@ public class NodeGenerator : MonoBehaviour
         var t = Instantiate(GetNodeInstance(type));
         t.gameObject.SetActive(true);
         nodes.Add(t);
+    }
+    void CheckNodesInstances()
+    {
+        GetNodeInstance(NodeType.Start).ToString();
+        GetNodeInstance(NodeType.Fight).ToString();
+        GetNodeInstance(NodeType.Chest).ToString();
+        GetNodeInstance(NodeType.Boss).ToString();
+        GetNodeInstance(NodeType.End).ToString();
+    }
+    void PrintNodeLinkes()
+    {
+        foreach (var node in nodes)
+        {
+            Debug.Log($"Node: {node} linked nodes: " + string.Join(", ", node.linkedNodes.Select(x => x.ToString()).ToArray()).Trim() + ".");
+        }
     }
     void AddLink(NodeLink link)
     {
